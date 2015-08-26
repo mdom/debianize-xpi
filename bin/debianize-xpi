@@ -1,0 +1,119 @@
+#!/bin/sh
+
+prog=${0##*/}
+rev="1"
+
+CURL_OPTIONS=""
+MAINTAINER="Mario Domgoergen <dom@math.uni-bonn.de>"
+
+usage(){
+	printf "dh-make-xpi [-b|-s] [-h] [-m MAINTAINER] [ -r REVISION ] XPI_URL\n" >&2
+	exit 1
+}
+
+error(){
+	printf "$prog: $1\n" >&2
+	exit 2
+}
+
+which fakeroot >/dev/null || error "fakeroot has to be installed."
+which xmlstarlet >/dev/null || error "xmlstarlet has to be installed."
+
+while getopts "bm:shr:" opt;do
+	case $opt in
+		b) binary=1 ;;
+		m) MAINTAINER=$OPTARG ;;
+		s) source=1 ;;
+		h) usage ;;
+		r) rev=$OPTARG ;;
+	esac
+done
+
+shift $(( $OPTIND - 1 ))
+		
+
+makedir() { [ -d "$1" ] || mkdir -p "$1"; }
+
+normalize_package_name(){
+	sed -e 's/_/-/g' | tr '[:upper:]' '[:lower:]'
+}
+
+rdf_get(){
+	xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t -v "$1" "$base_dir/tmp/src/install.rdf" || true
+}
+
+
+url=$1
+
+base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || { printf "Error creating a temporary directory\n" >&2; exit 1; }
+
+case $url in
+	*/thunderbird/* ) 
+		programm=icedove
+		;;
+	*/firefox/* ) 
+		programm=iceweasel
+		browser=browser/
+		;;
+esac
+
+makedir "$base_dir/tmp"
+
+curl -Lo "$base_dir/tmp/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
+
+unzip -qq -d "$base_dir/tmp/src/" "$base_dir/tmp/foo.xpi"
+
+
+version=$(rdf_get '/r:RDF/r:Description/em:version' | sed 's/-signed//')
+id=$(rdf_get '/r:RDF/r:Description/em:id')
+name=$(rdf_get '/r:RDF/r:Description/em:name' | normalize_package_name)
+
+description=$(rdf_get '/r:RDF/r:Description/em:description')
+if [ -z "${description:-}" ];then
+	description=$(rdf_get '/r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description')
+fi
+
+build_dir="$base_dir/${programm}-${name}-${version}-${rev}_all"
+
+package_name="$programm-$name"
+
+makedir "$build_dir/DEBIAN"
+
+extension_dir="$build_dir/usr/lib/$programm/${browser}extensions/$id"
+makedir "$extension_dir"
+
+doc_dir="$build_dir/usr/share/doc/$package_name/"
+makedir "$doc_dir"
+
+cat > $build_dir/DEBIAN/control <<-EOF
+	Package: $package_name
+	Version: $version-$rev
+	Section: web
+	Priority: optional
+	Architecture: all
+	Maintainer: $MAINTAINER
+	Depends: $programm
+	Description: Extension $name for $programm
+	 This extension was automatically created by dh-make-xpi.
+	 .
+	 $description
+EOF
+
+cat > "$doc_dir/copyright" <<-EOF
+	This package was debianized by $MAINTAINER on
+	$(date)
+
+	It was downloaded from https://addons.mozilla.org
+	
+	Copyright is held by the upstream author.
+EOF
+
+cp -r "$base_dir"/tmp/src/* "$extension_dir"
+find "$build_dir" -type d -print0 | xargs -0r chmod 755
+find "$build_dir" -type f -print0 | xargs -0r chmod 644
+fakeroot dpkg-deb --build "$build_dir"
+cp "$base_dir"/*.deb .
+
+rm -R "$base_dir"
+
+exit 0
