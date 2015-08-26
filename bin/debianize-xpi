@@ -39,7 +39,7 @@ normalize_package_name(){
 }
 
 rdf_get(){
-	xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t -v "$1" "$base_dir/tmp/src/install.rdf" || true
+	xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t -v "$1" "$base_dir/tmp/src/install.rdf"
 }
 
 
