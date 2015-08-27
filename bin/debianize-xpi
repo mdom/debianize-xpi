@@ -4,7 +4,8 @@ prog=${0##*/}
 rev="1"
 
 CURL_OPTIONS=""
-MAINTAINER="Mario Domgoergen <dom@math.uni-bonn.de>"
+
+MAINTAINER="$DEBFULLNAME${DEBUFULLNAME:- }<${DEBMAIL:-$USER@$(hostname -f)}>"
 
 usage(){
 	printf "dh-make-xpi [-h] [-m MAINTAINER] [ -r REVISION ] XPI_URL\n" >&2
@@ -19,9 +20,8 @@ error(){
 which fakeroot >/dev/null || error "fakeroot has to be installed."
 which xmlstarlet >/dev/null || error "xmlstarlet has to be installed."
 
-while getopts "m:hr:" opt;do
+while getopts "hr:" opt;do
 	case $opt in
-		m) MAINTAINER=$OPTARG ;;
 		h) usage ;;
 		r) rev=$OPTARG ;;
 	esac
