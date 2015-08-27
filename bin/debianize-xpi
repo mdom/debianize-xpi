@@ -37,7 +37,14 @@ normalize_package_name(){
 }
 
 rdf_get(){
-	xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t -v "$1" "$base_dir/tmp/src/install.rdf"
+	unzip -qq -c "$base_dir/foo.xpi" install.rdf |  xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t \
+		-v 'substring-before(concat("version ",/r:RDF/r:Description/em:version),"-signed")' -n \
+		-v 'concat("name ",/r:RDF/r:Description/em:name)' -n \
+		-v 'concat("id ",/r:RDF/r:Description/em:id)' -n \
+		-v 'concat("description ",/r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description)' \
+	| while read var val;do
+		printf "%s=%q\n" "$var" "$val"
+	done
 }
 
 
@@ -55,21 +62,13 @@ case $url in
 		;;
 esac
 
-makedir "$base_dir/tmp"
+makedir "$base_dir"
 
-curl -Lo "$base_dir/tmp/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
+curl -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
 
-unzip -qq -d "$base_dir/tmp/src/" "$base_dir/tmp/foo.xpi"
+eval $(rdf_get)
 
-
-version=$(rdf_get '/r:RDF/r:Description/em:version' | sed 's/-signed//')
-id=$(rdf_get '/r:RDF/r:Description/em:id')
-name=$(rdf_get '/r:RDF/r:Description/em:name' | normalize_package_name)
-
-description=$(rdf_get '/r:RDF/r:Description/em:description')
-if [ -z "${description:-}" ];then
-	description=$(rdf_get '/r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description')
-fi
+name=$(echo "$name" | normalize_package_name )
 
 build_dir="$base_dir/${programm}-${name}-${version}-${rev}_all"
 
