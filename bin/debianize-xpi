@@ -71,7 +71,7 @@ cat > $build_dir/debian/control <<-EOF
 	Section: web
 	Priority: optional
 	Maintainer: $MAINTAINER
-	Build-Depends: debhelper
+	Build-Depends: debhelper (>= 9~), mozilla-devscripts (>= 0.19~)
 
 	Package: $package_name
 	Section: web
