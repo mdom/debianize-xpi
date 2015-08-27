@@ -85,7 +85,11 @@ cat > $build_dir/debian/control <<-EOF
 	Package: $package_name
 	Section: web
 	Architecture: all
-	Depends: $programm
+	Depends: \${misc:Depends}, \${xpi:Depends}
+	Recommends: \${xpi:Recommends},
+	Provides: \${xpi:Provides}
+	Enhances: \${xpi:Enhances}
+	Breaks: \${xpi:Breaks}
 	Description: Extension $name for $programm
 	 This extension was automatically created by dh-make-xpi.
 	 .
