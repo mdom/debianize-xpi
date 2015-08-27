@@ -58,7 +58,6 @@ case $url in
 		;;
 	*/firefox/* ) 
 		programm=iceweasel
-		browser=browser/
 		;;
 esac
 
