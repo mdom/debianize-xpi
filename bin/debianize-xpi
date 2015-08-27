@@ -74,29 +74,29 @@ build_dir="$base_dir/${programm}-${name}-${version}-${rev}_all"
 
 package_name="$programm-$name"
 
-makedir "$build_dir/DEBIAN"
+makedir "$build_dir/debian"
 
-extension_dir="$build_dir/usr/lib/$programm/${browser}extensions/$id"
-makedir "$extension_dir"
-
-doc_dir="$build_dir/usr/share/doc/$package_name/"
-makedir "$doc_dir"
-
-cat > $build_dir/DEBIAN/control <<-EOF
-	Package: $package_name
-	Version: $version-$rev
+cat > $build_dir/debian/control <<-EOF
+	Source: $package_name
 	Section: web
 	Priority: optional
-	Architecture: all
 	Maintainer: $MAINTAINER
+	Build-Depends: debhelper
+
+	Package: $package_name
+	Section: web
+	Architecture: all
 	Depends: $programm
 	Description: Extension $name for $programm
 	 This extension was automatically created by dh-make-xpi.
 	 .
 	 $description
+
 EOF
 
-cat > "$doc_dir/copyright" <<-EOF
+echo 9 > "$build_dir/debian/compat"
+
+cat > "$build_dir/debian/copyright" <<-EOF
 	This package was debianized by $MAINTAINER on
 	$(date)
 
@@ -105,10 +105,25 @@ cat > "$doc_dir/copyright" <<-EOF
 	Copyright is held by the upstream author.
 EOF
 
-cp -r "$base_dir"/tmp/src/* "$extension_dir"
-find "$build_dir" -type d -print0 | xargs -0r chmod 755
-find "$build_dir" -type f -print0 | xargs -0r chmod 644
-fakeroot dpkg-deb --build "$build_dir"
+cat > "$build_dir/debian/changelog" <<-EOF
+	$package_name ($version-$rev) unstable; urgency=low
+
+	  * Packaged by debianize-xpi
+
+	 -- $MAINTAINER  $(LANG=C date -R)
+EOF
+
+cat > "$build_dir/debian/rules" <<'EOF'
+#!/usr/bin/make -f
+%:
+	dh $@ --with xul-ext
+
+override_dh_auto_install:
+	install-xpi -x COPYING ../foo.xpi
+EOF
+
+( cd "$build_dir"; debuild -b -uc -us);
+
 cp "$base_dir"/*.deb .
 
 rm -R "$base_dir"
