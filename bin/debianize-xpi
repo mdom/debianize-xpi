@@ -50,7 +50,7 @@ rdf_get(){
 
 url=$1
 
-base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || { printf "Error creating a temporary directory\n" >&2; exit 1; }
+base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || error "Error creating a temporary directory"
 
 makedir "$base_dir"
 
