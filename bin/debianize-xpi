@@ -52,15 +52,6 @@ url=$1
 
 base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || { printf "Error creating a temporary directory\n" >&2; exit 1; }
 
-case $url in
-	*/thunderbird/* ) 
-		programm=icedove
-		;;
-	*/firefox/* ) 
-		programm=iceweasel
-		;;
-esac
-
 makedir "$base_dir"
 
 curl -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
@@ -69,9 +60,9 @@ eval $(rdf_get)
 
 name=$(echo "$name" | normalize_package_name )
 
-build_dir="$base_dir/${programm}-${name}-${version}-${rev}_all"
+package_name="xul-ext-$name"
 
-package_name="$programm-$name"
+build_dir="$base_dir/$package_name-${version}-${rev}"
 
 makedir "$build_dir/debian"
 
@@ -90,7 +81,7 @@ cat > $build_dir/debian/control <<-EOF
 	Provides: \${xpi:Provides}
 	Enhances: \${xpi:Enhances}
 	Breaks: \${xpi:Breaks}
-	Description: Extension $name for $programm
+	Description: XUL Extension $name
 	 This extension was automatically created by dh-make-xpi.
 	 .
 	 $description
