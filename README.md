@@ -1,6 +1,8 @@
+<!---
 % DEBIANIZE-XPI(1) GNU
 % Mario Domgörgen
 % Aug 29, 2015
+--->
 
 # NAME
 
