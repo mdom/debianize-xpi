@@ -59,7 +59,7 @@ base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || error "Error creating a temporary
 
 makedir "$base_dir"
 
-curl -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
+curl --silent -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
 
 eval $(rdf_get)
 
@@ -124,7 +124,7 @@ override_dh_auto_install:
 	install-xpi -x COPYING ../foo.xpi
 EOF
 
-( cd "$build_dir"; debuild -b -uc -us);
+( cd "$build_dir"; debuild -b -uc -us >/dev/null);
 
 cp "$base_dir"/*.deb .
 
