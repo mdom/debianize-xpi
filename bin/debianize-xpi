@@ -36,9 +36,14 @@ normalize_package_name(){
 	tr '[:upper:]_ ' '[:lower:]--'
 }
 
+normalize_version(){
+	sed 's/-signed//'
+}
+
+
 rdf_get(){
 	unzip -qq -c "$base_dir/foo.xpi" install.rdf |  xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t \
-		-v 'substring-before(concat("version ",/r:RDF/r:Description/em:version),"-signed")' -n \
+		-v 'concat("version ",/r:RDF/r:Description/em:version)' -n \
 		-v 'concat("name ",/r:RDF/r:Description/em:name)' -n \
 		-v 'concat("id ",/r:RDF/r:Description/em:id)' -n \
 		-v 'concat("description ",/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description)' \
@@ -59,6 +64,7 @@ curl -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while download
 eval $(rdf_get)
 
 name=$(echo "$name" | normalize_package_name )
+version=$(echo "$version" | normalize_version )
 
 package_name="xul-ext-$name"
 
