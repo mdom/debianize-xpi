@@ -41,7 +41,7 @@ rdf_get(){
 		-v 'substring-before(concat("version ",/r:RDF/r:Description/em:version),"-signed")' -n \
 		-v 'concat("name ",/r:RDF/r:Description/em:name)' -n \
 		-v 'concat("id ",/r:RDF/r:Description/em:id)' -n \
-		-v 'concat("description ",/r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description)' \
+		-v 'concat("description ",/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description)' \
 	| while read var val;do
 		printf "%s=%q\n" "$var" "$val"
 	done
