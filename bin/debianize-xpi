@@ -69,6 +69,11 @@ while read -r tag val; do
 	esac
 done < "$base_dir/install.vars"
 
+[ -z "$name" ]        && error "Missing parameter name in install.rdf"
+[ -z "$description" ] && error "Missing parameter description in install.rdf"
+[ -z "$id" ]          && error "Missing parameter id in install.rdf"
+[ -z "$version" ]     && error "Missing parameter version in install.rdf"
+
 
 name=$(echo "$name" | normalize_package_name )
 version=$(echo "$version" | normalize_version )
