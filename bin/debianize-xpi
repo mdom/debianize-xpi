@@ -41,16 +41,6 @@ normalize_version(){
 }
 
 
-rdf_get(){
-	unzip -qq -c "$base_dir/foo.xpi" install.rdf |  xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t \
-		-o 'version ' -v /r:RDF/r:Description/em:version -n \
-		-o 'name ' -v /r:RDF/r:Description/em:name -n \
-		-o 'id ' -v /r:RDF/r:Description/em:id -n \
-		-o 'description ' -v '/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description' \
-	| while read var val;do
-		printf "%s=%q\n" "$var" "$val"
-	done
-}
 
 
 url=$1
@@ -61,7 +51,24 @@ makedir "$base_dir"
 
 curl --silent -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
 
-eval $(rdf_get)
+unzip -qq -c "$base_dir/foo.xpi" install.rdf > "$base_dir/install.rdf"
+
+xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t \
+	-o 'version ' -v /r:RDF/r:Description/em:version -n \
+	-o 'name ' -v /r:RDF/r:Description/em:name -n \
+	-o 'id ' -v /r:RDF/r:Description/em:id -n \
+	-o 'description ' -v '/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description' -n \
+	< "$base_dir/install.rdf" > "$base_dir/install.vars"
+
+while read -r tag val; do
+	case $tag in
+		name        ) name=$val        ;;
+		description ) description=$val ;;
+		id          ) id=$val          ;;
+		version     ) version=$val     ;;
+	esac
+done < "$base_dir/install.vars"
+
 
 name=$(echo "$name" | normalize_package_name )
 version=$(echo "$version" | normalize_version )
