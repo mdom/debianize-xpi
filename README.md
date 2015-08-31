@@ -18,6 +18,16 @@ debianize-xpi $MOZILLA\_DOWNLOAD\_URL
 provide the download url for the addon and it will produce a deb in your
 current wokring directory named *xul-ext-addon-name.deb*
 
+# INSTALLATION
+
+There's a number of dependency you need to run *debianize_xpi*: curl to
+download packages, xmlstarlet to parse the install.rdf and unzip to
+uncompress it. For building the package you need the normal debuilder
+toolchain and install-xpi from mozilla-devscripts. To install all
+dependency via apt-get just call:
+
+    $ apt-get install mozilla-devscripts curl unzip xmlstarlet devscripts
+
 # COPYRIGHT
 
 Copyright 2014 Mario Domgoergen <mario@domgoergen.com>
