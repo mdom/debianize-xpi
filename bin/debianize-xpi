@@ -9,12 +9,12 @@ MAINTAINER="$DEBFULLNAME${DEBUFULLNAME:- }<${DEBMAIL:-$USER@$(hostname -f)}>"
 
 usage(){
 	printf "$prog [-h] [ -r REVISION ] XPI_URL\n" >&2
-	exit 1
+	exit 0
 }
 
 error(){
 	printf "$prog: $1\n" >&2
-	exit 2
+	exit 1
 }
 
 which fakeroot >/dev/null || error "fakeroot has to be installed."
