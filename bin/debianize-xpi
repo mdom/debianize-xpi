@@ -37,7 +37,23 @@ normalize_version(){
 	sed 's/-signed//'
 }
 
+set_package_variables () {
+	xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t \
+		-o 'version ' -v /r:RDF/r:Description/em:version -n \
+		-o 'name ' -v /r:RDF/r:Description/em:name -n \
+		-o 'id ' -v /r:RDF/r:Description/em:id -n \
+		-o 'description ' -v '/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description' -n \
+		< "$1" > "$base_dir/install.vars"
 
+	while read -r tag val; do
+		case $tag in
+			name        ) name=$val        ;;
+			description ) description=$val ;;
+			id          ) id=$val          ;;
+			version     ) version=$val     ;;
+		esac
+	done < "$base_dir/install.vars"
+}
 
 
 url=$1
@@ -50,21 +66,7 @@ curl --silent -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while
 
 unzip -qq -c "$base_dir/foo.xpi" install.rdf > "$base_dir/install.rdf"
 
-xmlstarlet sel -N 'r=http://www.w3.org/1999/02/22-rdf-syntax-ns#' -t \
-	-o 'version ' -v /r:RDF/r:Description/em:version -n \
-	-o 'name ' -v /r:RDF/r:Description/em:name -n \
-	-o 'id ' -v /r:RDF/r:Description/em:id -n \
-	-o 'description ' -v '/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description' -n \
-	< "$base_dir/install.rdf" > "$base_dir/install.vars"
-
-while read -r tag val; do
-	case $tag in
-		name        ) name=$val        ;;
-		description ) description=$val ;;
-		id          ) id=$val          ;;
-		version     ) version=$val     ;;
-	esac
-done < "$base_dir/install.vars"
+set_package_variables "$base_dir/install.rdf"
 
 [ -z "$name" ]        && error "Missing parameter name in install.rdf"
 [ -z "$description" ] && error "Missing parameter description in install.rdf"
