@@ -9,7 +9,6 @@ MAINTAINER="$DEBFULLNAME${DEBUFULLNAME:- }<${DEBMAIL:-$USER@$(hostname -f)}>"
 
 usage(){
 	printf "$prog [-h] [ -r REVISION ] XPI_URL\n" >&2
-	exit 0
 }
 
 error(){
@@ -19,7 +18,7 @@ error(){
 
 while getopts "hr:" opt;do
 	case $opt in
-		h) usage ;;
+		h) usage; exit 0 ;;
 		r) rev=$OPTARG ;;
 	esac
 done
@@ -55,8 +54,13 @@ set_package_variables () {
 	done < "$base_dir/install.vars"
 }
 
-
 url=$1
+
+if [ -z "$url"];then
+	usage
+	error "Missing parameter XPI_URL."
+	exit 1
+fi
 
 base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || error "Error creating a temporary directory"
 
