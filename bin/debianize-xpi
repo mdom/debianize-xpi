@@ -17,9 +17,6 @@ error(){
 	exit 1
 }
 
-which fakeroot >/dev/null || error "fakeroot has to be installed."
-which xmlstarlet >/dev/null || error "xmlstarlet has to be installed."
-
 while getopts "hr:" opt;do
 	case $opt in
 		h) usage ;;
