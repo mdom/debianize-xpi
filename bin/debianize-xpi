@@ -16,16 +16,6 @@ error(){
 	exit 1
 }
 
-while getopts "hr:" opt;do
-	case $opt in
-		h) usage; exit 0 ;;
-		r) rev=$OPTARG ;;
-	esac
-done
-
-shift $(( $OPTIND - 1 ))
-		
-
 makedir() { [ -d "$1" ] || mkdir -p "$1"; }
 
 normalize_package_name(){
@@ -53,6 +43,15 @@ set_package_variables () {
 		esac
 	done < "$base_dir/install.vars"
 }
+
+while getopts "hr:" opt;do
+	case $opt in
+		h) usage; exit 0 ;;
+		r) rev=$OPTARG ;;
+	esac
+done
+
+shift $(( $OPTIND - 1 ))
 
 url=$1
 
