@@ -55,7 +55,7 @@ shift $(( $OPTIND - 1 ))
 
 url=$1
 
-if [ -z "$url"];then
+if [ -z "$url" ];then
 	usage
 	error "Missing parameter XPI_URL."
 	exit 1
