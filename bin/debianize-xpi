@@ -44,6 +44,15 @@ set_package_variables () {
 	done < "$base_dir/install.vars"
 }
 
+get_xpi_url () {
+	curl --silent -L "$1" | \
+		tidy -quiet -asxml -numeric -utf8 --force-output yes -file /dev/null | \
+		xmlstarlet sel \
+			-N n="http://www.w3.org/1999/xhtml" \
+			-t -o https://addons.mozilla.org -v '//n:a[contains(@href,"dp-btn-primary")]/@href'
+		
+}
+
 while getopts "hr:" opt;do
 	case $opt in
 		h) usage; exit 0 ;;
@@ -60,6 +69,17 @@ if [ -z "$url" ];then
 	error "Missing parameter XPI_URL."
 	exit 1
 fi
+
+case $url in
+	*xpi* )
+		:
+	;;
+	*addons.mozilla.org* )
+		url=$(get_xpi_url "$url")
+	;;
+esac
+
+echo $url
 
 base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || error "Error creating a temporary directory"
 
