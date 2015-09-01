@@ -32,7 +32,7 @@ set_package_variables () {
 		-o 'name ' -v /r:RDF/r:Description/em:name -n \
 		-o 'id ' -v /r:RDF/r:Description/em:id -n \
 		-o 'description ' -v '/r:RDF/r:Description/em:description | /r:RDF/r:Description/em:localized/r:Description[ em:locale = "en-US"]/em:description' -n \
-		< "$1" > "$base_dir/install.vars"
+		< "$1" > "$tmp_dir/install.vars"
 
 	while read -r tag val; do
 		case $tag in
@@ -41,7 +41,7 @@ set_package_variables () {
 			id          ) id=$val          ;;
 			version     ) version=$val     ;;
 		esac
-	done < "$base_dir/install.vars"
+	done < "$tmp_dir/install.vars"
 }
 
 get_xpi_url () {
@@ -81,13 +81,13 @@ esac
 
 echo $url
 
-base_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || error "Error creating a temporary directory"
+tmp_dir=$(mktemp -d "/tmp/$prog-XXXXXXXX") || error "Error creating a temporary directory"
 
-curl --silent -Lo "$base_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
+curl --silent -Lo "$tmp_dir/foo.xpi" $CURL_OPTIONS "$url" || error "Error while downloading"
 
-unzip -qq -c "$base_dir/foo.xpi" install.rdf > "$base_dir/install.rdf"
+unzip -qq -c "$tmp_dir/foo.xpi" install.rdf > "$tmp_dir/install.rdf"
 
-set_package_variables "$base_dir/install.rdf"
+set_package_variables "$tmp_dir/install.rdf"
 
 [ -z "$name" ]        && error "Missing parameter name in install.rdf"
 [ -z "$description" ] && error "Missing parameter description in install.rdf"
@@ -100,7 +100,7 @@ version=$(echo "$version" | normalize_version )
 
 package_name="xul-ext-$name"
 
-build_dir="$base_dir/$package_name-${version}-${rev}"
+build_dir="$tmp_dir/$package_name-${version}-${rev}"
 
 makedir "$build_dir/debian"
 
@@ -158,8 +158,8 @@ EOF
 
 ( cd "$build_dir"; debuild -b -uc -us >/dev/null);
 
-cp "$base_dir"/*.deb .
+cp "$tmp_dir"/*.deb .
 
-rm -R "$base_dir"
+rm -R "$tmp_dir"
 
 exit 0
