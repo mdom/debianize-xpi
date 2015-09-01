@@ -67,7 +67,6 @@ url=$1
 if [ -z "$url" ];then
 	usage
 	error "Missing parameter XPI_URL."
-	exit 1
 fi
 
 case $url in
