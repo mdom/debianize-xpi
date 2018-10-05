@@ -19,7 +19,7 @@ error(){
 makedir() { [ -d "$1" ] || mkdir -p "$1"; }
 
 normalize_package_name(){
-	tr '[:upper:]_ ' '[:lower:]--' | tr -cd '[:alnum:]+. -'
+	tr '[:upper:]_ ' '[:lower:]--' | tr -cd '[:alnum:]+. -()'
 }
 
 normalize_version(){
